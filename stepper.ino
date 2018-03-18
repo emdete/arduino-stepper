@@ -59,59 +59,10 @@ void stepper(int count) {
 			}
 		}
 		CurrentMicros = micros();
-		switch(Steps) {
-		case 0:
-			digitalWrite(IN1, LOW);
-			digitalWrite(IN2, LOW);
-			digitalWrite(IN3, LOW);
-			digitalWrite(IN4, HIGH);
-		break;
-		case 1:
-			digitalWrite(IN1, LOW);
-			digitalWrite(IN2, LOW);
-			digitalWrite(IN3, HIGH);
-			digitalWrite(IN4, HIGH);
-		break;
-		case 2:
-			digitalWrite(IN1, LOW);
-			digitalWrite(IN2, LOW);
-			digitalWrite(IN3, HIGH);
-			digitalWrite(IN4, LOW);
-		break;
-		case 3:
-			digitalWrite(IN1, LOW);
-			digitalWrite(IN2, HIGH);
-			digitalWrite(IN3, HIGH);
-			digitalWrite(IN4, LOW);
-		break;
-		case 4:
-			digitalWrite(IN1, LOW);
-			digitalWrite(IN2, HIGH);
-			digitalWrite(IN3, LOW);
-			digitalWrite(IN4, LOW);
-		break;
-		case 5:
-			digitalWrite(IN1, HIGH);
-			digitalWrite(IN2, HIGH);
-			digitalWrite(IN3, LOW);
-			digitalWrite(IN4, LOW);
-		break;
-		case 6:
-			digitalWrite(IN1, HIGH);
-			digitalWrite(IN2, LOW);
-			digitalWrite(IN3, LOW);
-			digitalWrite(IN4, LOW);
-		break;
-		case 7:
-			digitalWrite(IN1, HIGH);
-			digitalWrite(IN2, LOW);
-			digitalWrite(IN3, LOW);
-			digitalWrite(IN4, HIGH);
-		break;
-		default:
-			Serial.print(Steps);
-			Serial.println("Error!");
-		break;
+		const static int pins[4] = {IN1, IN2, IN3, IN4};
+		const static int states[8] = {1 , 3 , 2 , 6 , 4 , 12 , 8 , 9 , };
+		for (int i=0;i<4;i++) {
+			digitalWrite(pins[i], states[Steps]&(1<<i)? HIGH: LOW);
 		}
 		Steps = (Steps + 8 + Direction) % 8;
 	}
