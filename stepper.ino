@@ -1,4 +1,7 @@
 //
+#define countof(s) (sizeof(s)/sizeof(*s))
+#define COUNTED_PARAMETER(x) countof(x), x
+//
 class Stepper {
 private:
 	unsigned int steps360; // how many steps do one 360° round
@@ -20,6 +23,8 @@ public:
 		states[]: list of states
 	*/
 	Stepper(const unsigned int steps360, const unsigned int delta, const unsigned int pincount, const unsigned int* pins, const unsigned int statecount, const unsigned int* states) {
+		if (pincount > countof(this->pins) || statecount > countof(this->states))
+			return; // error out - how to report?
 		this->steps360 = steps360;
 		this->delta = delta;
 		this->pincount = pincount;
@@ -72,9 +77,6 @@ public:
 		this->delta = delta;
 	}
 };
-//
-#define countof(s) (sizeof(s)/sizeof(*s))
-#define COUNTED_PARAMETER(x) countof(x), x
 // config of the stepper motor
 const static unsigned long Steps360 = 4096l;
 const static unsigned int Pins[] = {8, 9, 10, 11, };
