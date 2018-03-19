@@ -105,8 +105,7 @@ static unsigned long c;
 
 Stepper stepper = Stepper(Steps360, Delta, COUNTED_PARAMETER(Pins), COUNTED_PARAMETER(States));
 
-void setup()
-{
+void setup() {
 	// init debug print
 	Serial.begin(38400);
 	Serial.println("Serial");
@@ -119,8 +118,7 @@ void setup()
 	Serial.println("Setup done");
 }
 
-void loop()
-{
+void loop() {
 	Serial.println("Loop");
 	/*
 	switch (random(2)) {
