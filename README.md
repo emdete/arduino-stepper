@@ -4,12 +4,12 @@ Arduino Stepper
 Stepper code for arduino.
 
 I was unable to use the original stepper lib from
-[Stepper](http://www.arduino.cc/en/Reference/Stepper) which just did not work.
-The flow seemed to be wrong for my wirering so i wrote something myself from
-scratch.
+[Stepper](http://www.arduino.cc/en/Reference/Stepper) which just did not work
+for me. The flow seemed to be wrong for my wirering so i wrote something myself
+from scratch.
 
-Finally i put it into a class which now is able to drive steppers in generic
-manner. Even the flow is declared at construbtion.
+Finally i put it into a class which now is able to drive steppers in a generic
+manner. Even the flow is declared at construction.
 
 This code is more generic than the official code as you can have as many pins
 as you like and any kind of flow to control these pins.
@@ -20,7 +20,7 @@ you define the pins like:
 	const static unsigned int Pins[] = {8, 9, 10, 11, };
 ```
 
-which can you given to the constructor with a macro like:
+which you can given to the constructor with a given macro:
 
 ```
 	COUNTED_PARAMETER(Pins)
