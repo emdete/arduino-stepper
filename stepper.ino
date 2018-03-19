@@ -30,14 +30,18 @@ public:
 			this->states[i] = states[i];
 		this->currentstep = 0;
 		this->currentmicro = micros();
+		for (unsigned int i=0;i<pincount;i++) {
+			pinMode(this->pins[i], OUTPUT);
+			digitalWrite(this->pins[i], LOW);
+		}
 	}
 	/**
 	* take count steps
 	*/
 	void step(int count) {
-		int Direction = 1;
+		int direction = 1;
 		if (count < 0) {
-			Direction = -1;
+			direction = -1;
 			count = -count;
 		}
 		for (int i=0;i<count;i++) {
@@ -48,23 +52,46 @@ public:
 			for (unsigned int i=0;i<this->pincount;i++) {
 				digitalWrite(this->pins[i], this->states[this->currentstep]&(1<<i)? HIGH: LOW);
 			}
-			this->currentstep = (this->currentstep + this->statecount + Direction) % this->statecount;
+			this->currentstep = (this->currentstep + this->statecount + direction) % this->statecount;
 			this->currentmicro = micros();
 		}
+	}
+	void setDelta(const unsigned int delta) {
+		this->delta = delta;
 	}
 };
 //
 #define countof(s) (sizeof(s)/sizeof(*s))
+#define COUNTED_PARAMETER(x) countof(x), x
 // config of the stepper motor
 const static unsigned long Steps360 = 4096l;
 const static unsigned int Pins[] = {8, 9, 10, 11, };
 const static unsigned long Delta = 1000;
-const static unsigned int States[] = {1, 3, 2, 6, 4, 12, 8, 9, };
-//const static int States[] = {1, 2, 4, 8, };
-//const static int States[] = {3, 6, 12, 9, };
+const static unsigned int States[] = {
+	0b0001,
+	0b0011,
+	0b0010,
+	0b0110,
+	0b0100,
+	0b1100,
+	0b1000,
+	0b1001,
+	};
+const static unsigned int StatesSingle[] = {
+	0b0001,
+	0b0010,
+	0b0100,
+	0b1000,
+	};
+const static unsigned int StatesDouble[] = {
+	0b0011,
+	0b0110,
+	0b1100,
+	0b1001,
+	};
 static unsigned long c;
 
-Stepper stepper = Stepper(Steps360, Delta, countof(Pins), Pins, countof(States), States);
+Stepper stepper = Stepper(Steps360, Delta, COUNTED_PARAMETER(Pins), COUNTED_PARAMETER(States));
 
 void setup()
 {
@@ -74,10 +101,6 @@ void setup()
 	// init random
 	randomSeed(analogRead(0));
 	// init stepper
-	for (unsigned int i=0;i<countof(Pins);i++) {
-		pinMode(Pins[i], OUTPUT);
-		digitalWrite(Pins[i], LOW);
-	}
 	// init loop
 	c = millis();
 	Serial.println("Setup done");
@@ -86,18 +109,15 @@ void setup()
 void loop()
 {
 	Serial.println("Loop");
-	//int d = random(2)? 1: -1;
-	//int a = (random(5) + 1) * 60;
-	stepper.step(Steps360/24); //(Steps360 * d * a) / 360);
-	delay(200);
-	stepper.step(-(int)Steps360/12); //(Steps360 * d * a) / 360);
-	delay(200);
-	stepper.step(Steps360/24); //(Steps360 * d * a) / 360);
-	//Serial.print(d * a);
-	//Serial.print(' ');
-	//Serial.println("Wait");
-	// exit
-	c += 3000;
+	switch (random(2)) {
+	case 0:
+		stepper.setDelta(Delta+200);
+		break;
+	default:
+		stepper.setDelta(Delta);
+	}
+	stepper.step(Steps360/60);
+	c += 1000;
 	while (millis() < c) {
 		delay(20);
 		yield();
