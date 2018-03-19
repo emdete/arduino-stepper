@@ -11,7 +11,7 @@ private:
 	unsigned long currentmicro; // current microsec to calc when next step can take place
 public:
 	/**
-	* Construct a stepper object.
+	Construct a stepper object.
 		steps360: number of steps to do a full round
 		delta: number of microseconds between steps
 		pincount: number of pins
@@ -28,6 +28,9 @@ public:
 		this->statecount = statecount;
 		for (unsigned int i=0;i<statecount;i++)
 			this->states[i] = states[i];
+	}
+
+	void init() {
 		this->currentstep = 0;
 		this->currentmicro = micros();
 		for (unsigned int i=0;i<pincount;i++) {
@@ -36,7 +39,7 @@ public:
 		}
 	}
 	/**
-	* take count steps
+	take count steps.
 	*/
 	void step(int count) {
 		int direction = 1;
@@ -45,7 +48,13 @@ public:
 			count = -count;
 		}
 		for (int i=0;i<count;i++) {
-			this->currentmicro += this->delta;
+			if (micros() < this->currentmicro) {
+				// after around 70min ulong overruns
+				this->currentmicro = this->delta;
+			}
+			else {
+				this->currentmicro += this->delta;
+			}
 			while (micros() < this->currentmicro) {
 				yield();
 			}
@@ -56,6 +65,9 @@ public:
 			this->currentmicro = micros();
 		}
 	}
+	/**
+	set a new delta
+	*/
 	void setDelta(const unsigned int delta) {
 		this->delta = delta;
 	}
@@ -101,6 +113,7 @@ void setup()
 	// init random
 	randomSeed(analogRead(0));
 	// init stepper
+	stepper.init();
 	// init loop
 	c = millis();
 	Serial.println("Setup done");
@@ -109,15 +122,18 @@ void setup()
 void loop()
 {
 	Serial.println("Loop");
+	/*
 	switch (random(2)) {
-	case 0:
-		stepper.setDelta(Delta+200);
-		break;
-	default:
-		stepper.setDelta(Delta);
+	case 0: stepper.setDelta(Delta+200); break;
+	default: stepper.setDelta(Delta);
 	}
-	stepper.step(Steps360/60);
-	c += 1000;
+	*/
+	stepper.step(Steps360/10);
+	delay(100);
+	stepper.step(-(int)Steps360/5);
+	delay(100);
+	stepper.step(Steps360/10);
+	c += 30000;
 	while (millis() < c) {
 		delay(20);
 		yield();
