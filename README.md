@@ -40,5 +40,13 @@ defined by something like:
 
 (nicely readable as gnu c++ supports binary numbers) with the same macro
 `COUNTED_PARAMETER` to ensure the right size. Maximum for pins is 5 and states
-is 10 (which can easlily be changes - you've got the source).
+is 10 (which can easlily be changes - you've got the source). Finally you
+construct your stepper object like this:
+
+```
+	Stepper stepper = Stepper(500, 1000, COUNTED_PARAMETER(Pins), COUNTED_PARAMETER(States));
+```
+
+and use `stepper.step(100)` as always. Currently the code is just a complete
+Arduino program, all functions are inline.
 
