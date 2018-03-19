@@ -1,28 +1,53 @@
-#define STEPS_360 4096l
-#define IN1 8
-#define IN2 9
-#define IN3 10
-#define IN4 11
+//
+#define countof(s) (sizeof(s)/sizeof(*s))
+// config of the stepper motor
+const static long Steps360 = 4096l;
+const static unsigned int Pins[] = {8, 9, 10, 11, };
+const static unsigned long Delta = 1000;
+const static int States[] = {1, 3, 2, 6, 4, 12, 8, 9, };
+//const static int States[] = {1, 2, 4, 8, };
+//const static int States[] = {3, 6, 12, 9, };
+// state of the stepper
+static int Step = 0;
+static unsigned long CurrentMicros = 0;
+// state of the loop
+static unsigned long c;
 
-int Steps = 0;
-unsigned long CurrentMicros = 0;
-unsigned long c;
+static void step(int count) {
+	int Direction = 1;
+	if (count < 0) {
+		Direction = -1;
+		count = -count;
+	}
+	for (int i=0;i<count;i++) {
+		CurrentMicros += Delta;
+		while (micros() < CurrentMicros) {
+			yield();
+		}
+		for (unsigned int i=0;i<countof(Pins);i++) {
+			digitalWrite(Pins[i], States[Step]&(1<<i)? HIGH: LOW);
+		}
+		Step = (Step + countof(States) + Direction) % countof(States);
+		CurrentMicros = micros();
+	}
+}
 
 void setup()
 {
+	// init debug print
 	Serial.begin(38400);
-	Serial.println("Starting");
+	Serial.println("Serial");
+	// init random
 	randomSeed(analogRead(0));
-	pinMode(IN1, OUTPUT);
-	pinMode(IN2, OUTPUT);
-	pinMode(IN3, OUTPUT);
-	pinMode(IN4, OUTPUT);
-	digitalWrite(IN1, LOW);
-	digitalWrite(IN2, LOW);
-	digitalWrite(IN3, LOW);
-	digitalWrite(IN4, LOW);
-	Serial.println("Setup");
+	// init stepper
+	CurrentMicros = micros();
+	for (unsigned int i=0;i<countof(Pins);i++) {
+		pinMode(Pins[i], OUTPUT);
+		digitalWrite(Pins[i], LOW);
+	}
+	// init loop
 	c = millis();
+	Serial.println("Setup done");
 }
 
 void loop()
@@ -30,40 +55,20 @@ void loop()
 	Serial.println("Loop");
 	//int d = random(2)? 1: -1;
 	//int a = (random(5) + 1) * 60;
-	stepper(STEPS_360 / 60); //(STEPS_360 * d * a) / 360);
-	//delay(200);
+	step(Steps360/24); //(Steps360 * d * a) / 360);
+	delay(200);
+	step(-Steps360/12); //(Steps360 * d * a) / 360);
+	delay(200);
+	step(Steps360/24); //(Steps360 * d * a) / 360);
 	//Serial.print(d * a);
 	//Serial.print(' ');
 	//Serial.print(CurrentMicros / 1000.);
 	//Serial.println("Wait");
 	// exit
-	c += 1000;
+	c += 30000;
 	while (millis() < c) {
 		delay(20);
 		yield();
 	}
 	Serial.println("Loop done");
-}
-
-void stepper(int count) {
-	int Direction = 1;
-	int Delta = 1000;
-	if (count < 0) {
-		Direction = -1;
-		count = -count;
-	}
-	for (int i=0;i<count;i++) {
-		if (CurrentMicros > 0) {
-			while (micros() < CurrentMicros + Delta) {
-				yield();
-			}
-		}
-		CurrentMicros = micros();
-		const static int pins[4] = {IN1, IN2, IN3, IN4};
-		const static int states[8] = {1 , 3 , 2 , 6 , 4 , 12 , 8 , 9 , };
-		for (int i=0;i<4;i++) {
-			digitalWrite(pins[i], states[Steps]&(1<<i)? HIGH: LOW);
-		}
-		Steps = (Steps + 8 + Direction) % 8;
-	}
 }
